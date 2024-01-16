@@ -48,3 +48,38 @@ class FileStorage:
                         self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """
+        Delete obj from __objects if it's inside.
+
+        Args:
+            obj (BaseModel): The object to be deleted.
+
+        Note:
+            If obj is equal to None, the method does nothing.
+        """
+        if obj is not None:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            if key in self.__objects:
+                del self.__objects[key]
+                self.save()
+
+    def all(self, cls=None):
+        """
+        Return a dictionary with all objects or all objects of a specific class.
+
+        Args:
+            cls (type): The class to filter objects. Default is None.
+
+        Returns:
+            dict: A dictionary containing objects.
+        """
+        if cls is None:
+            return self.__objects
+
+        filtered_objects = {}
+        for key, value in self.__objects.items():
+            if type(value) == cls:
+                filtered_objects[key] = value
+        return filtered_objects
