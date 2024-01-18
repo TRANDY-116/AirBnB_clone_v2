@@ -118,26 +118,44 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        args = args.split()
-        class_name = eval(arg[0])()
+
         try:
-            params = {}
-            for params in args[1:]:
+            class_name, *params = args.split()
+            if class_name not in HBNBCommand.classes:
+                print("** class doesn't exist **")
+                return
+
+            params_dict = {}
+            for param in params:
                 key, value = param.split('=')
-                params[key] = self.convert_value(value)
-            new_instance = HBNBCommand.classes[class_name](**params)
+                params_dict[key] = self.convert_value(value)
+
+            new_instance = HBNBCommand.classes[class_name](**params_dict)
             new_instance.save()
 
             print(new_instance.id)
         except Exception as e:
             print(e)
+        #elif args not in HBNBCommand.classes:
+            #print("** class doesn't exist **")
+            #return
+        #args = args.split()
+        #class_name = args[0]
+        #try:
+            #params = {}
+            #for param in args[1:]:
+                #key, value = param.split('=')
+                #params[key] = self.convert_value(value)
+            #new_instance = HBNBCommand.classes[class_name](**params)
+            #new_instance.save()
 
-    def check_value_type(self, value):
+            #print(new_instance.id)
+        #except Exception as e:
+            #print(e)
+
+    def convert_value(self, value):
         """check and convert the bvalue to the correct type"""
-        if value.startwith('"') and value.endswith('"'):
+        if value.startswith('"') and value.endswith('"'):
             # String value
             return value[1:-1].replace('_', ' ').replace('\\"', '"')
         elif '.' in value:

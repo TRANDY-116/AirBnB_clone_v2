@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from models.base_model import BaseModel
 
 
 class FileStorage:
@@ -8,22 +9,25 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self):
-        """Returns a dictionary of models currently in storage"""
-        return FileStorage.__objects
+    def all(self, cls=None):
+        """Returns a list of objects of one type of class"""
+
+        if cls is None:
+            return self.__objects
+        else:
+            return {k: v for k, v in self.__objects.items() if isinstance(v, cls)}
 
     def new(self, obj):
-        """Adds new object to storage dictionary"""
-        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+        """sets in __objects with obj with key <obj class name>.id"""
+        key = "{}.{}".format(obj.__class__.__name__, obg.id)
+        self.__objects[key] = obj
 
     def save(self):
         """Saves storage dictionary to file"""
-        with open(FileStorage.__file_path, 'w') as f:
-            temp = {}
-            temp.update(FileStorage.__objects)
-            for key, val in temp.items():
-                temp[key] = val.to_dict()
-            json.dump(temp, f)
+        serialized_objects = {k: v.to_dict() for k, v in self.__objects.items()}
+        with open(self.__file_path, 'w', encoding="utf-8") as f:
+            json.dump(serialized_objects, f)
+
 
     def reload(self):
         """Loads storage dictionary from file"""
@@ -41,11 +45,12 @@ class FileStorage:
                     'Review': Review
                   }
         try:
-            temp = {}
-            with open(FileStorage.__file_path, 'r') as f:
-                temp = json.load(f)
-                for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+            with open(self.__file_path, 'r', encoding="utf-8") as f:
+                loaded_objects = json.load(f)
+                for k, v in loaded_objects.items():
+                    class_name = v['__class__']
+                    obj = BaseModel(**v) if class_name == 'BaseModel' else globals()[class_name](**v)
+                    self.__objects[k] = obj
         except FileNotFoundError:
             pass
 
@@ -64,22 +69,3 @@ class FileStorage:
             if key in self.__objects:
                 del self.__objects[key]
                 self.save()
-
-    def all(self, cls=None):
-        """
-        Return a dictionary with all objects or all objects of a specific class.
-
-        Args:
-            cls (type): The class to filter objects. Default is None.
-
-        Returns:
-            dict: A dictionary containing objects.
-        """
-        if cls is None:
-            return self.__objects
-
-        filtered_objects = {}
-        for key, value in self.__objects.items():
-            if type(value) == cls:
-                filtered_objects[key] = value
-        return filtered_objects
