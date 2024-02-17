@@ -41,7 +41,7 @@ def pythoniscool(text="is cool"):
 
 @app.route("/number/<int:n>", strict_slashes=False)
 def number(n):
-    """ 
+    """
     /number/<n>: display “n is a number” only if n is an integer
     """
     return "{:d} is a number".format(n)
